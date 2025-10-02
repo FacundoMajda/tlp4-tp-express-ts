@@ -1,11 +1,16 @@
 import { Response } from "express";
-import { MyRequest } from "../types/req";
 import EquipmentService from "../services/equipment.service";
+import { MyRequest } from "../types/req";
 
 export class EquipmentController {
+  private equipmentService: EquipmentService;
+
+  constructor(equipmentService: EquipmentService) {
+    this.equipmentService = equipmentService;
+  }
   public async getEquipment(req: MyRequest, res: Response): Promise<void> {
     try {
-      const equipments = await EquipmentService.getAllEquipments();
+      const equipments = await this.equipmentService.getAllEquipments();
       res.status(200).json({
         success: true,
         message: "Lista de equipos obtenida correctamente",
@@ -22,7 +27,9 @@ export class EquipmentController {
   public async getEquipmentById(req: MyRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const equipment = await EquipmentService.getEquipmentById(Number(id));
+      const equipment = await this.equipmentService.getEquipmentById(
+        Number(id)
+      );
 
       res.status(200).json({
         success: true,
@@ -44,7 +51,9 @@ export class EquipmentController {
   public async createEquipment(req: MyRequest, res: Response): Promise<void> {
     try {
       const equipmentData = req.body;
-      const equipment = await EquipmentService.createEquipment(equipmentData);
+      const equipment = await this.equipmentService.createEquipment(
+        equipmentData
+      );
 
       res.status(201).json({
         success: true,
@@ -69,7 +78,7 @@ export class EquipmentController {
     try {
       const { id } = req.params;
       const equipmentData = req.body;
-      const equipment = await EquipmentService.updateEquipment(
+      const equipment = await this.equipmentService.updateEquipment(
         Number(id),
         equipmentData
       );
@@ -97,7 +106,7 @@ export class EquipmentController {
   public async deleteEquipment(req: MyRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      await EquipmentService.deleteEquipment(Number(id));
+      await this.equipmentService.deleteEquipment(Number(id));
 
       res.status(200).json({
         success: true,
@@ -121,7 +130,7 @@ export class EquipmentController {
   ): Promise<void> {
     try {
       const { userId } = req.params;
-      const equipments = await EquipmentService.getEquipmentsByUserId(
+      const equipments = await this.equipmentService.getEquipmentsByUserId(
         Number(userId)
       );
 
@@ -150,7 +159,9 @@ export class EquipmentController {
   ): Promise<void> {
     try {
       const { status } = req.params;
-      const equipments = await EquipmentService.getEquipmentsByStatus(status);
+      const equipments = await this.equipmentService.getEquipmentsByStatus(
+        status
+      );
 
       res.status(200).json({
         success: true,
@@ -175,7 +186,7 @@ export class EquipmentController {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      const equipment = await EquipmentService.updateEquipmentStatus(
+      const equipment = await this.equipmentService.updateEquipmentStatus(
         Number(id),
         status
       );
@@ -205,7 +216,7 @@ export class EquipmentController {
   ): Promise<void> {
     try {
       const { serialNumber } = req.params;
-      const equipment = await EquipmentService.getEquipmentBySerialNumber(
+      const equipment = await this.equipmentService.getEquipmentBySerialNumber(
         serialNumber
       );
 

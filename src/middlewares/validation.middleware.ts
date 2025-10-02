@@ -1,6 +1,6 @@
 import { NextFunction, Response } from "express";
 import { MyRequest } from "../types/req";
-import UserService from "../services/user.service";
+import User from "../models/user.model";
 
 export const validateUserRegister = (
   req: MyRequest,
@@ -124,7 +124,9 @@ export const validateEquipment = async (
           "Nombre, tipo, número de serie y ID de usuario asignado son obligatorios",
       });
     }
-    const user = await UserService.findOneUser({ id: userId });
+
+    const user = await User.findByPk(userId);
+
     if (!user) {
       return res.status(400).json({
         success: false,

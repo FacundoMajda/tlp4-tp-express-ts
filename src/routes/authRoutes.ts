@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/AuthController";
+import { UserRepository } from "../repositories/user.repository";
+import UserService from "../services/user.service";
 import isAuth from "../middlewares/isAuth";
 import {
   validateUserRegister,
@@ -7,18 +9,18 @@ import {
 } from "../middlewares/validation.middleware";
 
 const authRouter = Router();
-const authController = new AuthController();
+const userRepository = new UserRepository();
+const userService = new UserService(userRepository);
+const authController = new AuthController(userService);
 
-authRouter.post(
-  "/login",
-  validateUserLogin,
-  authController.login.bind(authController)
+authRouter.post("/login", validateUserLogin, (req, res) =>
+  authController.login(req, res)
 );
-authRouter.post(
-  "/register",
-  validateUserRegister,
-  authController.register.bind(authController)
+authRouter.post("/register", validateUserRegister, (req, res) =>
+  authController.register(req, res)
 );
-authRouter.post("/logout", isAuth, authController.logout.bind(authController));
+authRouter.post("/logout", isAuth, (req, res) =>
+  authController.logout(req, res)
+);
 
 export { authRouter };

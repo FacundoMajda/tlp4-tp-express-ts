@@ -4,6 +4,11 @@ import { MyRequest } from "../types/req";
 import { sign } from "../utils/jwt-utils";
 
 export class AuthController {
+  private userService: UserService;
+
+  constructor(userService: UserService) {
+    this.userService = userService;
+  }
   public async login(req: Request, res: Response): Promise<void> {
     try {
       const { email, password } = req.body;
@@ -16,7 +21,7 @@ export class AuthController {
         return;
       }
 
-      const user = await UserService.findOneUser({ email });
+      const user = await this.userService.findOneUser({ email });
 
       if (!user) {
         res.status(401).json({
@@ -26,7 +31,7 @@ export class AuthController {
         return;
       }
 
-      const isValidPassword = await UserService.validatePassword(
+      const isValidPassword = await this.userService.validatePassword(
         email,
         password
       );
@@ -78,7 +83,7 @@ export class AuthController {
         return;
       }
 
-      const userExists = await UserService.userExists(email);
+      const userExists = await this.userService.userExists(email);
 
       if (userExists) {
         res.status(409).json({
@@ -95,9 +100,9 @@ export class AuthController {
         role: role || "user",
       };
 
-      const newUser = await UserService.createUser(userData);
+      const newUser = await this.userService.createUser(userData);
 
-      const userWithoutPassword = await UserService.findOneUser({
+      const userWithoutPassword = await this.userService.findOneUser({
         email: newUser.email,
       });
 

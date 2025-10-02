@@ -2,9 +2,14 @@ import { Request, Response } from "express";
 import UserService from "../services/user.service";
 
 export class UserController {
+  private userService: UserService;
+
+  constructor(userService: UserService) {
+    this.userService = userService;
+  }
   public async getUsers(req: Request, res: Response): Promise<void> {
     try {
-      const users = await UserService.getAllUsers();
+      const users = await this.userService.getAllUsers();
       res.status(200).json({
         success: true,
         message: "Lista de usuarios obtenida correctamente",
@@ -23,8 +28,10 @@ export class UserController {
       const { id } = req.params;
       const userData = req.body;
 
-      await UserService.updateUserById(userData, parseInt(id));
-      const updatedUser = await UserService.findOneUser({ id: parseInt(id) });
+      await this.userService.updateUserById(userData, parseInt(id));
+      const updatedUser = await this.userService.findOneUser({
+        id: parseInt(id),
+      });
 
       res.status(200).json({
         success: true,
@@ -45,7 +52,7 @@ export class UserController {
   public async deleteUser(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      await UserService.deleteUserById(parseInt(id));
+      await this.userService.deleteUserById(parseInt(id));
 
       res.status(200).json({
         success: true,
@@ -63,7 +70,7 @@ export class UserController {
   public async getUserById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const user = await UserService.getUserById(parseInt(id));
+      const user = await this.userService.getUserById(parseInt(id));
 
       res.status(200).json({
         success: true,
@@ -86,7 +93,7 @@ export class UserController {
     try {
       const userData = req.body;
 
-      const userExists = await UserService.userExists(userData.email);
+      const userExists = await this.userService.userExists(userData.email);
       if (userExists) {
         res.status(409).json({
           success: false,
@@ -95,7 +102,7 @@ export class UserController {
         return;
       }
 
-      const newUser = await UserService.createUser(userData);
+      const newUser = await this.userService.createUser(userData);
       const { password, ...userWithoutPassword } = newUser.toJSON();
 
       res.status(201).json({
@@ -115,7 +122,7 @@ export class UserController {
   public async getUsersByRole(req: Request, res: Response): Promise<void> {
     try {
       const { role } = req.params;
-      const users = await UserService.getUsersByRole(role);
+      const users = await this.userService.getUsersByRole(role);
 
       res.status(200).json({
         success: true,
@@ -139,7 +146,7 @@ export class UserController {
   ): Promise<void> {
     try {
       const { id } = req.params;
-      const userWithEquipments = await UserService.getUserWithEquipments(
+      const userWithEquipments = await this.userService.getUserWithEquipments(
         parseInt(id)
       );
 

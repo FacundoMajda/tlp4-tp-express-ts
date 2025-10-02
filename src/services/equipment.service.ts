@@ -1,8 +1,15 @@
 import Equipment from "../models/equipment.model";
 import User from "../models/user.model";
+import { EquipmentRepository } from "../repositories/equipment.repository";
 
 class EquipmentService {
-  static async createEquipment(equipmentData: any) {
+  private equipmentRepository: EquipmentRepository;
+
+  constructor(equipmentRepository: EquipmentRepository) {
+    this.equipmentRepository = equipmentRepository;
+  }
+
+  async createEquipment(equipmentData: any) {
     if (equipmentData.userId) {
       const userExists = await User.findByPk(equipmentData.userId);
       if (!userExists) {
@@ -10,41 +17,37 @@ class EquipmentService {
       }
     }
 
-    const equipment = await Equipment.create(equipmentData);
+    const equipment = await this.equipmentRepository.create(equipmentData);
     return equipment;
   }
 
-  static async getAllEquipments() {
-    const equipments = await Equipment.findAll({
-      include: [
-        {
-          model: User,
-          as: "user",
-          attributes: ["id", "name", "email"],
-        },
-      ],
-    });
+  async getAllEquipments() {
+    const equipments = await this.equipmentRepository.findAllWithUser();
     return equipments;
   }
 
-  static async getEquipmentById(id: number) {
-    const equipment = await Equipment.findByPk(id, {
-      include: [
+  async getEquipmentById(id: number) {
+    const equipment = await this.equipmentRepository.findById(id);
+    if (!equipment) {
+      throw new Error("Equipo no encontrado");
+    }
+
+    const equipmentWithUser = await this.equipmentRepository.findWithIncludes(
+      { id },
+      [
         {
           model: User,
           as: "user",
           attributes: ["id", "name", "email"],
         },
-      ],
-    });
-    if (!equipment) {
-      throw new Error("Equipo no encontrado");
-    }
-    return equipment;
+      ]
+    );
+
+    return equipmentWithUser[0];
   }
 
-  static async updateEquipment(id: number, equipmentData: any) {
-    const equipment = await Equipment.findByPk(id);
+  async updateEquipment(id: number, equipmentData: any) {
+    const equipment = await this.equipmentRepository.findById(id);
     if (!equipment) {
       throw new Error("Equipo no encontrado");
     }
@@ -56,63 +59,57 @@ class EquipmentService {
       }
     }
 
-    await Equipment.update(equipmentData, {
-      where: { id },
-    });
-
-    return await Equipment.findByPk(id);
+    const updatedEquipment = await this.equipmentRepository.updateById(
+      id,
+      equipmentData
+    );
+    return updatedEquipment;
   }
 
-  static async deleteEquipment(id: number) {
-    const deletedCount = await Equipment.destroy({
-      where: { id },
-    });
-
-    if (deletedCount === 0) {
+  async deleteEquipment(id: number) {
+    const equipment = await this.equipmentRepository.findById(id);
+    if (!equipment) {
       throw new Error("Equipo no encontrado");
     }
 
-    return deletedCount;
+    await this.equipmentRepository.deleteById(id);
+    return 1;
   }
 
-  static async getEquipmentsByUserId(userId: number) {
-    const user = await User.findByPk(userId, {
-      include: [
-        {
-          model: Equipment,
-          as: "equipments",
-        },
-      ],
-      attributes: ["id", "name", "email"],
-    });
+  async getEquipmentsByUserId(userId: number) {
+    const user = await User.findByPk(userId);
     if (!user) {
       throw new Error("Usuario no encontrado");
     }
 
-    return user;
+    const equipments = await this.equipmentRepository.findByUserId(userId);
+    return {
+      ...user.toJSON(),
+      equipments,
+    };
   }
 
-  static async getEquipmentsByStatus(status: string) {
-    const equipments = await Equipment.findAll({
-      where: { status },
-    });
+  async getEquipmentsByStatus(status: string) {
+    const equipments = await this.equipmentRepository.find({ status });
     return equipments;
   }
 
-  static async updateEquipmentStatus(id: number, status: string) {
-    const equipment = await Equipment.findByPk(id);
+  async updateEquipmentStatus(id: number, status: string) {
+    const equipment = await this.equipmentRepository.findById(id);
     if (!equipment) {
       throw new Error("Equipo no encontrado");
     }
 
-    await Equipment.update({ status }, { where: { id } });
-    return await Equipment.findByPk(id);
+    const updatedEquipment = await this.equipmentRepository.updateById(id, {
+      status,
+    });
+    return updatedEquipment;
   }
 
-  static async getEquipmentBySerialNumber(serialNumber: string) {
-    const equipment = await Equipment.findOne({
-      where: { serialNumber },
-    });
+  async getEquipmentBySerialNumber(serialNumber: string) {
+    const equipment = await this.equipmentRepository.findBySerialNumber(
+      serialNumber
+    );
     if (!equipment) {
       throw new Error("Equipo no encontrado");
     }

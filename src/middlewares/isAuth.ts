@@ -1,7 +1,7 @@
 import { NextFunction, Response } from "express";
+import User from "../models/user.model";
 import { MyRequest } from "../types/req";
 import { verify } from "../utils/jwt-utils";
-import UserService from "../services/user.service";
 
 const isAuth = async (req: MyRequest, res: Response, next: NextFunction) => {
   try {
@@ -21,7 +21,10 @@ const isAuth = async (req: MyRequest, res: Response, next: NextFunction) => {
 
     const decoded = data.decoded as any;
     const userId = decoded.userId || decoded.id;
-    const user = await UserService.findOneUser({ id: userId });
+
+    const user = await User.findByPk(userId, {
+      attributes: { exclude: ["password"] },
+    });
 
     if (!user) {
       return res

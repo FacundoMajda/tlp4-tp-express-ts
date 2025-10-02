@@ -1,5 +1,5 @@
-import { DataTypes, Model, BelongsTo } from "sequelize";
-import sequelizeConnection from "../core/config/db";
+import { DataTypes, Model } from "sequelize";
+import { DatabaseConnection } from "../core/config/db";
 
 class Equipment extends Model {
   public id!: number;
@@ -78,7 +78,7 @@ Equipment.init(
     },
   },
   {
-    sequelize: sequelizeConnection,
+    sequelize: DatabaseConnection.getInstance().getSequelize(),
     tableName: "equipment",
     createdAt: "created_at",
     updatedAt: "last_updated",

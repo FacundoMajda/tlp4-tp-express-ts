@@ -1,5 +1,5 @@
 import { DataTypes, Model } from "sequelize";
-import sequelizeConnection from "../core/config/db";
+import { DatabaseConnection } from "../core/config/db";
 
 class User extends Model {
   public id!: number;
@@ -42,7 +42,7 @@ User.init(
     },
   },
   {
-    sequelize: sequelizeConnection,
+    sequelize: DatabaseConnection.getInstance().getSequelize(),
     tableName: "users",
     createdAt: "created_at",
     updatedAt: "last_updated",

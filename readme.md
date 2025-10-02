@@ -69,9 +69,11 @@ src/
 ├── controllers/    # manejo requests
 ├── models/        # entidades base datos
 ├── services/      # logica negocio
+├── repositories/  # acceso a datos
 ├── routes/        # definicion endpoints
 ├── middlewares/   # validaciones y auth
 ├── utils/         # helpers
+├── types/         # definiciones de tipos
 └── core/          # configuracion
 ```
 
@@ -80,6 +82,28 @@ por que asi:
 - separacion responsabilidades
 - facil mantenimiento
 - codigo reutilizable
+- arquitectura escalable
+
+### arquitectura
+
+se implementa patron repositorio-servicio-controlador:
+
+```
+controller -> service -> repository -> model
+```
+
+- controller: maneja requests http, valida datos y delega logica
+- service: contiene logica de negocio, coordina operaciones
+- repository: abstrae acceso a datos, implementa operaciones crud
+- model: representa entidades de base de datos
+
+por que esta arquitectura:
+
+- separacion clara de responsabilidades
+- codigo mas mantenible y testeable
+- facilita intercambio de implementaciones
+- reduce duplicacion de codigo
+- inyeccion de dependencias para mayor flexibilidad
 
 ### propiedades entidades
 
@@ -111,6 +135,60 @@ por que estas propiedades:
 - status para control operativo
 - location para trazabilidad
 - fechas para gestion garantias
+
+### repositories
+
+se implementan repositories para user y equipment:
+
+- userrepository: gestiona operaciones crud de usuarios
+- equipmentrepository: gestiona operaciones crud de equipos
+
+interfaces comunes:
+
+- find(): buscar multiples registros
+- findbyid(): buscar por id
+- create(): crear nuevo registro
+- updatebyid(): actualizar registro
+- deletebyid(): eliminar registro
+
+metodos especializados:
+
+- findbyemail(): buscar usuario por email
+- findbyserialnumber(): buscar equipo por numero de serie
+- findallwithuser(): obtener equipos con datos de usuario
+- findbyuserid(): obtener equipos por usuario
+
+por que repositories:
+
+- abstraccion del acceso a datos
+- centralizacion de consultas
+- facilitan pruebas unitarias
+- permiten cambiar implementacion sin afectar servicios
+
+### inyeccion de dependencias
+
+se implementa inyeccion de dependencias simple para controladores en las rutas:
+
+```typescript
+// enrutado
+const userRepository = new UserRepository();
+const userService = new UserService(userRepository);
+const userController = new UserController(userService);
+```
+
+flujo de dependencias:
+
+1. se instancia repository con acceso a datos
+2. se instancia service con repository inyectado
+3. se instancia controller con service inyectado
+4. router usa controller para manejar requests
+
+por que inyeccion de dependencias:
+
+- codigo desacoplado
+- facil para pruebas unitarias
+- permite cambiar implementaciones
+- mejora mantenibilidad
 
 ## endpoints
 
